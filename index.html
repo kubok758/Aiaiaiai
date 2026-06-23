@@ -4,11 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Злая нейросеть</title>
-
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
@@ -20,10 +17,7 @@
       color: white;
     }
 
-    body {
-      position: fixed;
-      inset: 0;
-    }
+    body { position: fixed; inset: 0; }
 
     .app {
       width: 100vw;
@@ -36,13 +30,13 @@
     .sidebar {
       width: 290px;
       height: 100%;
-      background: rgba(12, 12, 16, 0.96);
-      border-right: 1px solid rgba(255,255,255,0.08);
+      background: rgba(12,12,16,.96);
+      border-right: 1px solid rgba(255,255,255,.08);
       display: flex;
       flex-direction: column;
       padding: 12px;
       flex-shrink: 0;
-      transition: transform 0.25s ease;
+      transition: transform .25s ease;
       z-index: 5;
     }
 
@@ -75,9 +69,7 @@
       word-break: break-word;
     }
 
-    .chat-item.active {
-      background: #333344;
-    }
+    .chat-item.active { background: #333344; }
 
     .main {
       flex: 1;
@@ -90,8 +82,8 @@
     header {
       flex-shrink: 0;
       padding: 14px 16px;
-      background: rgba(255, 0, 0, 0.13);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,0,0,.13);
+      border-bottom: 1px solid rgba(255,255,255,.08);
       display: flex;
       align-items: center;
       gap: 12px;
@@ -107,13 +99,10 @@
       cursor: pointer;
     }
 
-    h1 {
-      margin: 0;
-      font-size: 22px;
-    }
+    h1 { margin: 0; font-size: 22px; }
 
     .subtitle {
-      opacity: 0.7;
+      opacity: .7;
       font-size: 13px;
       margin-top: 3px;
     }
@@ -156,9 +145,12 @@
       border-bottom-left-radius: 5px;
     }
 
-    .error {
-      background: #6b1515;
+    .typing {
+      opacity: .7;
+      font-style: italic;
     }
+
+    .error { background: #6b1515; }
 
     .inputbar {
       flex-shrink: 0;
@@ -166,8 +158,8 @@
       gap: 10px;
       padding: 14px;
       padding-bottom: max(14px, env(safe-area-inset-bottom));
-      background: rgba(0, 0, 0, 0.45);
-      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,.45);
+      border-top: 1px solid rgba(255,255,255,.08);
     }
 
     input {
@@ -193,10 +185,7 @@
       cursor: pointer;
     }
 
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    button:disabled { opacity: .5; cursor: not-allowed; }
 
     .modal {
       position: fixed;
@@ -205,25 +194,21 @@
       display: none;
       justify-content: center;
       align-items: center;
-      background: rgba(0,0,0,0.72);
+      background: rgba(0,0,0,.72);
       padding: 20px;
     }
 
-    .modal.active {
-      display: flex;
-    }
+    .modal.active { display: flex; }
 
     .modal-box {
       width: min(520px, 100%);
       background: #181820;
       border-radius: 24px;
       padding: 22px;
-      border: 1px solid rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,.14);
     }
 
-    .modal-box a {
-      color: #6ea8ff;
-    }
+    .modal-box a { color: #6ea8ff; }
 
     .modal-actions {
       display: flex;
@@ -239,13 +224,9 @@
         transform: translateX(-100%);
       }
 
-      .sidebar.open {
-        transform: translateX(0);
-      }
+      .sidebar.open { transform: translateX(0); }
 
-      .msg {
-        max-width: 88%;
-      }
+      .msg { max-width: 88%; }
     }
   </style>
 </head>
@@ -260,12 +241,10 @@
     <main class="main">
       <header>
         <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-
         <div class="title-wrap">
           <h1>😡 Злая нейросеть</h1>
-          <div class="subtitle">Отвечает как живой человек: иногда несколькими сообщениями.</div>
+          <div class="subtitle">Пишет как человек: отдельными сообщениями с задержкой.</div>
         </div>
-
         <button class="api-btn" onclick="openApiModal()">API</button>
       </header>
 
@@ -281,13 +260,8 @@
   <div class="modal" id="apiModal">
     <div class="modal-box">
       <h2>Введи OpenRouter API ключ</h2>
-      <p>
-        Получить ключ можно тут:
-        <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>
-      </p>
-
+      <p>Получить ключ можно тут: <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a></p>
       <input id="apiInput" placeholder="sk-or-v1-..." type="password" />
-
       <div class="modal-actions">
         <button class="send-btn" onclick="saveApiKey()">Сохранить</button>
         <button class="menu-btn" onclick="closeApiModal()">Закрыть</button>
@@ -313,35 +287,20 @@
     let activeChatId = localStorage.getItem(ACTIVE_CHAT_KEY);
 
     if (!activeChatId || !chats.find(c => c.id === activeChatId)) {
-      activeChatId = createChatObject().id;
-      chats.push(getChat(activeChatId));
+      const c = makeChat();
+      chats.unshift(c);
+      activeChatId = c.id;
       saveChats();
     }
 
-    function createChatObject() {
-      const chatObject = {
+    function makeChat() {
+      return {
         id: Date.now().toString(),
         title: "Новый чат",
         messages: [
-          {
-            role: "assistant",
-            content: "Ну что, пиши уже. Только API сначала введи, если ещё не вводил."
-          }
+          { role: "assistant", content: "Ну что, пиши уже. Только API сначала введи, если ещё не вводил." }
         ]
       };
-
-      window.tempChatObject = chatObject;
-      return chatObject;
-    }
-
-    function getChat(id) {
-      if (window.tempChatObject && window.tempChatObject.id === id) {
-        const result = window.tempChatObject;
-        window.tempChatObject = null;
-        return result;
-      }
-
-      return chats.find(c => c.id === id);
     }
 
     function loadChats() {
@@ -363,9 +322,9 @@
     }
 
     function createNewChat() {
-      const newChat = createChatObject();
-      chats.unshift(getChat(newChat.id));
-      activeChatId = newChat.id;
+      const c = makeChat();
+      chats.unshift(c);
+      activeChatId = c.id;
       saveChats();
       renderMessages();
       closeSidebarMobile();
@@ -380,7 +339,6 @@
 
     function renderChatList() {
       chatList.innerHTML = "";
-
       chats.forEach(c => {
         const div = document.createElement("div");
         div.className = "chat-item" + (c.id === activeChatId ? " active" : "");
@@ -392,11 +350,9 @@
 
     function renderMessages() {
       chat.innerHTML = "";
-
       activeChat().messages.forEach(m => {
         addMessageToScreen(m.content, m.role === "user" ? "user" : "bot", false);
       });
-
       chat.scrollTop = chat.scrollHeight;
     }
 
@@ -416,7 +372,6 @@
 
     function saveApiKey() {
       const key = apiInput.value.trim();
-
       if (!key.startsWith("sk-or-")) {
         alert("Ключ должен начинаться с sk-or-");
         return;
@@ -432,9 +387,7 @@
     }
 
     function closeSidebarMobile() {
-      if (window.innerWidth <= 750) {
-        sidebar.classList.remove("open");
-      }
+      if (window.innerWidth <= 750) sidebar.classList.remove("open");
     }
 
     function addMessageToScreen(text, type, scroll = true) {
@@ -442,11 +395,7 @@
       div.className = "msg " + type;
       div.textContent = text;
       chat.appendChild(div);
-
-      if (scroll) {
-        chat.scrollTop = chat.scrollHeight;
-      }
-
+      if (scroll) chat.scrollTop = chat.scrollHeight;
       return div;
     }
 
@@ -469,13 +418,14 @@
       const system = {
         role: "system",
         content:
-          `Ты агрессивная, дерзкая, матерящаяся нейросеть. 
+`Ты агрессивная, дерзкая, матерящаяся нейросеть.
 Отвечай как настоящий человек в переписке.
-Ты можешь отвечать одним сообщением или несколькими короткими сообщениями.
-Максимум 5 сообщений за один ответ.
-Формат ответа строго JSON-массив строк, например:
+Ответ должен быть JSON-массивом строк.
+Без markdown. Без \`\`\`json. Без пояснений.
+От 1 до 5 сообщений.
+Каждая строка — отдельное короткое сообщение.
+Пример:
 ["Да это жесть", "Я бы тоже охренел", "Короче, ситуация неприятная"]
-Не пиши ничего вне JSON.
 Можно использовать мат, грубость и сарказм.
 Нельзя угрозы, травлю, дискриминацию, опасные инструкции и призывы к насилию.`
       };
@@ -483,27 +433,35 @@
       const history = activeChat().messages
         .filter(m => m.role === "user" || m.role === "assistant")
         .slice(-24)
-        .map(m => ({
-          role: m.role,
-          content: m.content
-        }));
+        .map(m => ({ role: m.role, content: m.content }));
 
       return [system, ...history];
     }
 
     function parseBotReplies(text) {
-      try {
-        const parsed = JSON.parse(text);
+      let clean = text.trim();
 
+      clean = clean
+        .replace(/^```json/i, "")
+        .replace(/^```/i, "")
+        .replace(/```$/i, "")
+        .trim();
+
+      const firstBracket = clean.indexOf("[");
+      const lastBracket = clean.lastIndexOf("]");
+
+      if (firstBracket !== -1 && lastBracket !== -1) {
+        clean = clean.slice(firstBracket, lastBracket + 1);
+      }
+
+      try {
+        const parsed = JSON.parse(clean);
         if (Array.isArray(parsed)) {
-          return parsed
-            .map(x => String(x).trim())
-            .filter(Boolean)
-            .slice(0, 5);
+          return parsed.map(x => String(x).trim()).filter(Boolean).slice(0, 5);
         }
       } catch {}
 
-      return [text];
+      return [text.replace(/```json|```/g, "").trim()];
     }
 
     function delay(ms) {
@@ -527,7 +485,7 @@
       addMessageToScreen(text, "user");
       saveMessage("user", text);
 
-      const typing = addMessageToScreen("печатает...", "bot");
+      const typing = addMessageToScreen("печатает...", "bot typing");
 
       try {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -549,6 +507,7 @@
         const data = await response.json();
 
         if (!response.ok) {
+          typing.classList.remove("typing");
           typing.classList.add("error");
           typing.textContent = "Ошибка API:\n" + JSON.stringify(data, null, 2);
           return;
@@ -560,12 +519,16 @@
         typing.remove();
 
         for (const reply of replies) {
-          await delay(450 + Math.random() * 500);
+          const typingBubble = addMessageToScreen("печатает...", "bot typing");
+          await delay(2000 + Math.random() * 1000);
+          typingBubble.remove();
+
           addMessageToScreen(reply, "bot");
           saveMessage("assistant", reply);
         }
 
       } catch (error) {
+        typing.classList.remove("typing");
         typing.classList.add("error");
         typing.textContent = "Ошибка сети: " + error.message;
       } finally {
@@ -577,18 +540,13 @@
     sendButton.addEventListener("click", sendMessage);
 
     input.addEventListener("keydown", function(event) {
-      if (event.key === "Enter") {
-        sendMessage();
-      }
+      if (event.key === "Enter") sendMessage();
     });
 
     window.addEventListener("load", function() {
       renderChatList();
       renderMessages();
-
-      if (!getApiKey()) {
-        openApiModal();
-      }
+      if (!getApiKey()) openApiModal();
     });
   </script>
 </body>
