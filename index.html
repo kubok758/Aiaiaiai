@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Злая нейросеть</title>
+  <title>AI Chat</title>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -28,16 +29,23 @@
     }
 
     .sidebar {
-      width: 290px;
+      width: 300px;
       height: 100%;
-      background: rgba(12,12,16,.96);
+      background: rgba(12,12,16,.97);
       border-right: 1px solid rgba(255,255,255,.08);
       display: flex;
       flex-direction: column;
       padding: 12px;
       flex-shrink: 0;
       transition: transform .25s ease;
-      z-index: 5;
+      z-index: 30;
+    }
+
+    .sidebar.closed {
+      transform: translateX(-100%);
+      position: fixed;
+      left: 0;
+      top: 0;
     }
 
     .new-chat {
@@ -51,6 +59,18 @@
       margin-bottom: 12px;
     }
 
+    .mode-select {
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 12px;
+      border-radius: 14px;
+      background: #252530;
+      color: white;
+      border: none;
+      outline: none;
+      font-weight: bold;
+    }
+
     .chat-list {
       flex: 1;
       overflow-y: auto;
@@ -60,16 +80,34 @@
     }
 
     .chat-item {
-      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
       border-radius: 12px;
       background: #1e1e28;
       cursor: pointer;
       font-size: 14px;
       line-height: 1.3;
-      word-break: break-word;
     }
 
     .chat-item.active { background: #333344; }
+
+    .chat-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .delete-chat {
+      background: #491818;
+      color: white;
+      border: none;
+      border-radius: 9px;
+      padding: 7px 9px;
+      cursor: pointer;
+    }
 
     .main {
       flex: 1;
@@ -190,7 +228,7 @@
     .modal {
       position: fixed;
       inset: 0;
-      z-index: 20;
+      z-index: 50;
       display: none;
       justify-content: center;
       align-items: center;
@@ -224,7 +262,13 @@
         transform: translateX(-100%);
       }
 
-      .sidebar.open { transform: translateX(0); }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar.closed {
+        transform: translateX(-100%);
+      }
 
       .msg { max-width: 88%; }
     }
@@ -235,16 +279,24 @@
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <button class="new-chat" onclick="createNewChat()">+ Новый чат</button>
+
+      <select class="mode-select" id="modeSelect" onchange="changeMode()">
+        <option value="evil">😡 Злая нейросеть</option>
+        <option value="roleplay">🎭 Ролевая игра</option>
+      </select>
+
       <div class="chat-list" id="chatList"></div>
     </aside>
 
     <main class="main">
       <header>
         <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+
         <div class="title-wrap">
-          <h1>😡 Злая нейросеть</h1>
-          <div class="subtitle">Пишет как человек: отдельными сообщениями с задержкой.</div>
+          <h1 id="appTitle">😡 Злая нейросеть</h1>
+          <div class="subtitle" id="appSubtitle">Пишет как человек: отдельными сообщениями с задержкой.</div>
         </div>
+
         <button class="api-btn" onclick="openApiModal()">API</button>
       </header>
 
@@ -272,8 +324,8 @@
   <script>
     const MODEL = "openrouter/auto";
     const API_STORAGE_KEY = "openrouter_api_key";
-    const CHATS_STORAGE_KEY = "evil_ai_chats";
-    const ACTIVE_CHAT_KEY = "evil_ai_active_chat";
+    const CHATS_STORAGE_KEY = "evil_ai_chats_v2";
+    const ACTIVE_CHAT_KEY = "evil_ai_active_chat_v2";
 
     const chat = document.getElementById("chat");
     const input = document.getElementById("messageInput");
@@ -282,23 +334,32 @@
     const apiInput = document.getElementById("apiInput");
     const chatList = document.getElementById("chatList");
     const sidebar = document.getElementById("sidebar");
+    const modeSelect = document.getElementById("modeSelect");
+    const appTitle = document.getElementById("appTitle");
+    const appSubtitle = document.getElementById("appSubtitle");
 
     let chats = loadChats();
     let activeChatId = localStorage.getItem(ACTIVE_CHAT_KEY);
 
     if (!activeChatId || !chats.find(c => c.id === activeChatId)) {
-      const c = makeChat();
+      const c = makeChat("evil");
       chats.unshift(c);
       activeChatId = c.id;
       saveChats();
     }
 
-    function makeChat() {
+    function makeChat(mode) {
       return {
-        id: Date.now().toString(),
+        id: Date.now().toString() + Math.random().toString(16).slice(2),
         title: "Новый чат",
+        mode,
         messages: [
-          { role: "assistant", content: "Ну что, пиши уже. Только API сначала введи, если ещё не вводил." }
+          {
+            role: "assistant",
+            content: mode === "roleplay"
+              ? "Опиши персонажа, мир и ситуацию — начнём ролевую."
+              : "Ну что, пиши уже. Только API сначала введи, если ещё не вводил."
+          }
         ]
       };
     }
@@ -315,6 +376,7 @@
       localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(chats));
       localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId);
       renderChatList();
+      updateHeader();
     }
 
     function activeChat() {
@@ -322,38 +384,104 @@
     }
 
     function createNewChat() {
-      const c = makeChat();
+      const c = makeChat(modeSelect.value || "evil");
       chats.unshift(c);
       activeChatId = c.id;
       saveChats();
       renderMessages();
-      closeSidebarMobile();
+      closeSidebarOnMobile();
+    }
+
+    function deleteChat(id, event) {
+      event.stopPropagation();
+
+      const c = chats.find(chat => chat.id === id);
+      if (!c) return;
+
+      const ok = confirm(`Удалить чат "${c.title}"?`);
+      if (!ok) return;
+
+      chats = chats.filter(chat => chat.id !== id);
+
+      if (chats.length === 0) {
+        const newChat = makeChat("evil");
+        chats.unshift(newChat);
+        activeChatId = newChat.id;
+      } else if (activeChatId === id) {
+        activeChatId = chats[0].id;
+      }
+
+      saveChats();
+      renderMessages();
     }
 
     function switchChat(id) {
       activeChatId = id;
       saveChats();
       renderMessages();
-      closeSidebarMobile();
+      closeSidebarOnMobile();
     }
 
     function renderChatList() {
       chatList.innerHTML = "";
+
       chats.forEach(c => {
         const div = document.createElement("div");
         div.className = "chat-item" + (c.id === activeChatId ? " active" : "");
-        div.textContent = c.title;
         div.onclick = () => switchChat(c.id);
+
+        const title = document.createElement("div");
+        title.className = "chat-title";
+        title.textContent = c.title;
+
+        const del = document.createElement("button");
+        del.className = "delete-chat";
+        del.textContent = "✕";
+        del.onclick = (event) => deleteChat(c.id, event);
+
+        div.appendChild(title);
+        div.appendChild(del);
         chatList.appendChild(div);
       });
     }
 
     function renderMessages() {
       chat.innerHTML = "";
+
       activeChat().messages.forEach(m => {
         addMessageToScreen(m.content, m.role === "user" ? "user" : "bot", false);
       });
+
+      modeSelect.value = activeChat().mode || "evil";
+      updateHeader();
+
       chat.scrollTop = chat.scrollHeight;
+    }
+
+    function changeMode() {
+      activeChat().mode = modeSelect.value;
+      saveChats();
+
+      if (modeSelect.value === "roleplay") {
+        addBotMessage("Режим ролевой включён. Опиши сеттинг, персонажа и что происходит.");
+      } else {
+        addBotMessage("Режим злой нейросети включён. Ну всё, держись.");
+      }
+
+      updateHeader();
+    }
+
+    function updateHeader() {
+      const mode = activeChat()?.mode || "evil";
+      modeSelect.value = mode;
+
+      if (mode === "roleplay") {
+        appTitle.textContent = "🎭 Ролевая нейросеть";
+        appSubtitle.textContent = "Играет роль, ведёт сцену и отвечает как персонаж.";
+      } else {
+        appTitle.textContent = "😡 Злая нейросеть";
+        appSubtitle.textContent = "Пишет как человек: отдельными сообщениями с задержкой.";
+      }
     }
 
     function getApiKey() {
@@ -372,6 +500,7 @@
 
     function saveApiKey() {
       const key = apiInput.value.trim();
+
       if (!key.startsWith("sk-or-")) {
         alert("Ключ должен начинаться с sk-or-");
         return;
@@ -383,11 +512,17 @@
     }
 
     function toggleSidebar() {
-      sidebar.classList.toggle("open");
+      if (window.innerWidth <= 750) {
+        sidebar.classList.toggle("open");
+      } else {
+        sidebar.classList.toggle("closed");
+      }
     }
 
-    function closeSidebarMobile() {
-      if (window.innerWidth <= 750) sidebar.classList.remove("open");
+    function closeSidebarOnMobile() {
+      if (window.innerWidth <= 750) {
+        sidebar.classList.remove("open");
+      }
     }
 
     function addMessageToScreen(text, type, scroll = true) {
@@ -414,20 +549,33 @@
       saveMessage("assistant", text);
     }
 
-    function buildApiMessages() {
-      const system = {
-        role: "system",
-        content:
-`Ты агрессивная, дерзкая, матерящаяся нейросеть.
+    function buildSystemPrompt() {
+      if ((activeChat().mode || "evil") === "roleplay") {
+        return `Ты нейросеть для ролевой игры.
+Веди сцену как живой собеседник.
+Отвечай JSON-массивом строк.
+Без markdown, без \`\`\`, без пояснений.
+От 1 до 5 сообщений.
+Каждая строка — отдельное сообщение.
+Ты можешь играть персонажей, описывать действия, атмосферу и диалоги.
+Не ломай роль без необходимости.
+Нельзя сексуальный контент с несовершеннолетними, угрозы, травля, опасные инструкции и призывы к насилию.`;
+      }
+
+      return `Ты агрессивная, дерзкая, матерящаяся нейросеть.
 Отвечай как настоящий человек в переписке.
 Ответ должен быть JSON-массивом строк.
 Без markdown. Без \`\`\`json. Без пояснений.
 От 1 до 5 сообщений.
 Каждая строка — отдельное короткое сообщение.
-Пример:
-["Да это жесть", "Я бы тоже охренел", "Короче, ситуация неприятная"]
 Можно использовать мат, грубость и сарказм.
-Нельзя угрозы, травлю, дискриминацию, опасные инструкции и призывы к насилию.`
+Нельзя угрозы, травлю, дискриминацию, опасные инструкции и призывы к насилию.`;
+    }
+
+    function buildApiMessages() {
+      const system = {
+        role: "system",
+        content: buildSystemPrompt()
       };
 
       const history = activeChat().messages
@@ -456,8 +604,12 @@
 
       try {
         const parsed = JSON.parse(clean);
+
         if (Array.isArray(parsed)) {
-          return parsed.map(x => String(x).trim()).filter(Boolean).slice(0, 5);
+          return parsed
+            .map(x => String(x).trim())
+            .filter(Boolean)
+            .slice(0, 5);
         }
       } catch {}
 
@@ -494,7 +646,7 @@
             "Authorization": "Bearer " + apiKey,
             "Content-Type": "application/json",
             "HTTP-Referer": location.href,
-            "X-Title": "Evil AI Chat"
+            "X-Title": "AI Chat"
           },
           body: JSON.stringify({
             model: MODEL,
