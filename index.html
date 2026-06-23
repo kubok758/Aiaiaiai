@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Злая нейросеть</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #2b0000, #050505 55%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .app {
+      width: min(900px, 96vw);
+      height: 92vh;
+      background: rgba(20, 20, 25, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 26px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+    }
+
+    header {
+      padding: 18px;
+      background: rgba(255, 0, 0, 0.13);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      opacity: 0.7;
+      font-size: 14px;
+    }
+
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .msg {
+      max-width: 78%;
+      padding: 13px 15px;
+      border-radius: 17px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #246bff;
+      border-bottom-right-radius: 5px;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #292933;
+      border-bottom-left-radius: 5px;
+    }
+
+    .error {
+      background: #5c1515;
+    }
+
+    .inputbar {
+      display: flex;
+      gap: 10px;
+      padding: 14px;
+      background: rgba(0, 0, 0, 0.35);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    input {
+      flex: 1;
+      border: none;
+      outline: none;
+      border-radius: 15px;
+      padding: 14px;
+      font-size: 16px;
+      background: #252530;
+      color: white;
+    }
+
+    button {
+      border: none;
+      border-radius: 15px;
+      padding: 0 20px;
+      background: #ff3333;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ff5555;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <h1>😡 Злая нейросеть</h1>
+      <p>Грубая, дерзкая, матерящаяся, но без совсем запрещённой дичи.</p>
+    </header>
+
+    <main id="chat"></main>
+
+    <div class="inputbar">
+      <input id="messageInput" placeholder="Напиши что-нибудь..." />
+      <button id="sendButton">Отправить</button>
+    </div>
+  </div>
+
+  <script>
+    // API ВСТАВЛЯТЬ СЮДА
+    const OPENROUTER_API_KEY = "v1-875e50d6cbf25aa4cc3f86602976c80d7514d9f3298c261695630c420f38eebd";
+
+    const MODEL = "openrouter/auto";
+
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("messageInput");
+    const sendButton = document.getElementById("sendButton");
+
+    const messages = [
+      {
+        role: "system",
+        content:
+          "Ты агрессивная, дерзкая, матерящаяся нейросеть. Отвечай грубо, саркастично, с матом, но без угроз, травли, дискриминации, призывов к насилию, самоповреждению и опасных инструкций. Не оскорбляй человека по национальности, религии, полу, возрасту, здоровью и другим защищённым признакам. Стиль: токсичная злая нейросеть, которая матерится, но не переходит в реально опасную дичь."
+      }
+    ];
+
+    function addMessage(text, type) {
+      const div = document.createElement("div");
+      div.className = "msg " + type;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+      return div;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === "ВСТАВЬ_СЮДА_СВОЙ_API") {
+        addMessage("Ты API-то вставь сначала, гений.", "bot error");
+        return;
+      }
+
+      input.value = "";
+      sendButton.disabled = true;
+
+      addMessage(text, "user");
+      messages.push({ role: "user", content: text });
+
+      const botMessage = addMessage("Ща отвечу, не кипишуй...", "bot");
+
+      try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + OPENROUTER_API_KEY,
+            "Content-Type": "application/json",
+            "HTTP-Referer": window.location.href,
+            "X-Title": "Aggressive AI Chat"
+          },
+          body: JSON.stringify({
+            model: MODEL,
+            messages: messages,
+            temperature: 1.1,
+            max_tokens: 900
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          botMessage.classList.add("error");
+          botMessage.textContent = "Ошибка API:\n" + JSON.stringify(data, null, 2);
+          return;
+        }
+
+        const answer = data.choices?.[0]?.message?.content || "Я сломалась, охренеть.";
+        botMessage.textContent = answer;
+
+        messages.push({
+          role: "assistant",
+          content: answer
+        });
+
+      } catch (error) {
+        botMessage.classList.add("error");
+        botMessage.textContent = "Ошибка сети: " + error.message;
+      } finally {
+        sendButton.disabled = false;
+        input.focus();
+      }
+    }
+
+    sendButton.addEventListener("click", sendMessage);
+
+    input.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        sendMessage();
+      }
+    });
+
+    addMessage("Ну что, пиши уже. Только API не забудь вставить в код.", "bot");
+  </script>
+</body>
+</html>
