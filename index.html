@@ -16,7 +16,7 @@
       height: 100%;
       overflow: hidden;
       font-family: Arial, sans-serif;
-      background: radial-gradient(circle at top, #2b0000, #050505 60%);
+      background: #08080c;
       color: white;
     }
 
@@ -28,56 +28,99 @@
     .app {
       width: 100vw;
       height: 100dvh;
-      padding: 18px;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #330000, #050506 65%);
     }
 
-    .chat-box {
-      width: min(900px, 100%);
+    .sidebar {
+      width: 290px;
       height: 100%;
-      max-height: 920px;
-      background: rgba(20, 20, 25, 0.94);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 26px;
-      overflow: hidden;
+      background: rgba(12, 12, 16, 0.96);
+      border-right: 1px solid rgba(255,255,255,0.08);
       display: flex;
       flex-direction: column;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+      padding: 12px;
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+      z-index: 5;
+    }
+
+    .new-chat {
+      padding: 13px;
+      border-radius: 14px;
+      background: #ff3333;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat-item {
+      padding: 12px;
+      border-radius: 12px;
+      background: #1e1e28;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .chat-item.active {
+      background: #333344;
+    }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
 
     header {
       flex-shrink: 0;
-      padding: 18px;
+      padding: 14px 16px;
       background: rgba(255, 0, 0, 0.13);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       display: flex;
-      justify-content: space-between;
-      gap: 12px;
       align-items: center;
+      gap: 12px;
+    }
+
+    .menu-btn, .api-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #252530;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
     }
 
     h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 22px;
     }
 
-    header p {
-      margin: 6px 0 0;
+    .subtitle {
       opacity: 0.7;
-      font-size: 14px;
+      font-size: 13px;
+      margin-top: 3px;
     }
 
-    .small-btn {
-      flex-shrink: 0;
-      border: none;
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: #2a2a35;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
+    .title-wrap {
+      flex: 1;
+      min-width: 0;
     }
 
     #chat {
@@ -87,17 +130,18 @@
       padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       -webkit-overflow-scrolling: touch;
     }
 
     .msg {
       max-width: 78%;
       padding: 13px 15px;
-      border-radius: 17px;
-      line-height: 1.45;
+      border-radius: 18px;
+      line-height: 1.4;
       white-space: pre-wrap;
       word-wrap: break-word;
+      font-size: 16px;
     }
 
     .user {
@@ -121,9 +165,9 @@
       display: flex;
       gap: 10px;
       padding: 14px;
-      background: rgba(0, 0, 0, 0.35);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
       padding-bottom: max(14px, env(safe-area-inset-bottom));
+      background: rgba(0, 0, 0, 0.45);
+      border-top: 1px solid rgba(255,255,255,0.08);
     }
 
     input {
@@ -138,7 +182,7 @@
       color: white;
     }
 
-    button {
+    .send-btn {
       border: none;
       border-radius: 15px;
       padding: 0 20px;
@@ -157,11 +201,11 @@
     .modal {
       position: fixed;
       inset: 0;
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.72);
+      z-index: 20;
       display: none;
       justify-content: center;
       align-items: center;
+      background: rgba(0,0,0,0.72);
       padding: 20px;
     }
 
@@ -172,19 +216,9 @@
     .modal-box {
       width: min(520px, 100%);
       background: #181820;
-      border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 24px;
       padding: 22px;
-      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.75);
-    }
-
-    .modal-box h2 {
-      margin: 0 0 10px;
-    }
-
-    .modal-box p {
-      opacity: 0.75;
-      line-height: 1.45;
+      border: 1px solid rgba(255,255,255,0.14);
     }
 
     .modal-box a {
@@ -197,22 +231,20 @@
       margin-top: 14px;
     }
 
-    @media (max-width: 600px) {
-      .app {
-        padding: 0;
+    @media (max-width: 750px) {
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
       }
 
-      .chat-box {
-        border-radius: 0;
-        max-height: none;
+      .sidebar.open {
+        transform: translateX(0);
       }
 
       .msg {
         max-width: 88%;
-      }
-
-      button {
-        padding: 0 14px;
       }
     }
   </style>
@@ -220,22 +252,30 @@
 
 <body>
   <div class="app">
-    <div class="chat-box">
+    <aside class="sidebar" id="sidebar">
+      <button class="new-chat" onclick="createNewChat()">+ Новый чат</button>
+      <div class="chat-list" id="chatList"></div>
+    </aside>
+
+    <main class="main">
       <header>
-        <div>
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+
+        <div class="title-wrap">
           <h1>😡 Злая нейросеть</h1>
-          <p>Дерзкая, грубая, матерящаяся, но без запрещённой дичи.</p>
+          <div class="subtitle">Отвечает как живой человек: иногда несколькими сообщениями.</div>
         </div>
-        <button class="small-btn" onclick="openApiModal()">API</button>
+
+        <button class="api-btn" onclick="openApiModal()">API</button>
       </header>
 
-      <main id="chat"></main>
+      <section id="chat"></section>
 
       <div class="inputbar">
         <input id="messageInput" placeholder="Напиши что-нибудь..." />
-        <button id="sendButton">Отправить</button>
+        <button class="send-btn" id="sendButton">Отправить</button>
       </div>
-    </div>
+    </main>
   </div>
 
   <div class="modal" id="apiModal">
@@ -249,32 +289,119 @@
       <input id="apiInput" placeholder="sk-or-v1-..." type="password" />
 
       <div class="modal-actions">
-        <button onclick="saveApiKey()">Сохранить</button>
-        <button class="small-btn" onclick="closeApiModal()">Закрыть</button>
+        <button class="send-btn" onclick="saveApiKey()">Сохранить</button>
+        <button class="menu-btn" onclick="closeApiModal()">Закрыть</button>
       </div>
     </div>
   </div>
 
   <script>
     const MODEL = "openrouter/auto";
-    const STORAGE_KEY = "openrouter_api_key";
+    const API_STORAGE_KEY = "openrouter_api_key";
+    const CHATS_STORAGE_KEY = "evil_ai_chats";
+    const ACTIVE_CHAT_KEY = "evil_ai_active_chat";
 
     const chat = document.getElementById("chat");
     const input = document.getElementById("messageInput");
     const sendButton = document.getElementById("sendButton");
     const apiModal = document.getElementById("apiModal");
     const apiInput = document.getElementById("apiInput");
+    const chatList = document.getElementById("chatList");
+    const sidebar = document.getElementById("sidebar");
 
-    const messages = [
-      {
-        role: "system",
-        content:
-          "Ты агрессивная, дерзкая, матерящаяся нейросеть. Отвечай грубо, саркастично, с матом, но без угроз, травли, дискриминации, призывов к насилию, самоповреждению и опасных инструкций."
+    let chats = loadChats();
+    let activeChatId = localStorage.getItem(ACTIVE_CHAT_KEY);
+
+    if (!activeChatId || !chats.find(c => c.id === activeChatId)) {
+      activeChatId = createChatObject().id;
+      chats.push(getChat(activeChatId));
+      saveChats();
+    }
+
+    function createChatObject() {
+      const chatObject = {
+        id: Date.now().toString(),
+        title: "Новый чат",
+        messages: [
+          {
+            role: "assistant",
+            content: "Ну что, пиши уже. Только API сначала введи, если ещё не вводил."
+          }
+        ]
+      };
+
+      window.tempChatObject = chatObject;
+      return chatObject;
+    }
+
+    function getChat(id) {
+      if (window.tempChatObject && window.tempChatObject.id === id) {
+        const result = window.tempChatObject;
+        window.tempChatObject = null;
+        return result;
       }
-    ];
+
+      return chats.find(c => c.id === id);
+    }
+
+    function loadChats() {
+      try {
+        return JSON.parse(localStorage.getItem(CHATS_STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveChats() {
+      localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(chats));
+      localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId);
+      renderChatList();
+    }
+
+    function activeChat() {
+      return chats.find(c => c.id === activeChatId);
+    }
+
+    function createNewChat() {
+      const newChat = createChatObject();
+      chats.unshift(getChat(newChat.id));
+      activeChatId = newChat.id;
+      saveChats();
+      renderMessages();
+      closeSidebarMobile();
+    }
+
+    function switchChat(id) {
+      activeChatId = id;
+      saveChats();
+      renderMessages();
+      closeSidebarMobile();
+    }
+
+    function renderChatList() {
+      chatList.innerHTML = "";
+
+      chats.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "chat-item" + (c.id === activeChatId ? " active" : "");
+        div.textContent = c.title;
+        div.onclick = () => switchChat(c.id);
+        chatList.appendChild(div);
+      });
+    }
+
+    function renderMessages() {
+      chat.innerHTML = "";
+
+      activeChat().messages.forEach(m => {
+        addMessageToScreen(m.content, m.role === "user" ? "user" : "bot", false);
+      });
+
+      chat.scrollTop = chat.scrollHeight;
+    }
 
     function getApiKey() {
-      return localStorage.getItem(STORAGE_KEY) || "";
+      return localStorage.getItem(API_STORAGE_KEY) || "";
     }
 
     function openApiModal() {
@@ -295,18 +422,92 @@
         return;
       }
 
-      localStorage.setItem(STORAGE_KEY, key);
+      localStorage.setItem(API_STORAGE_KEY, key);
       closeApiModal();
-      addMessage("API сохранил. Теперь можешь писать, наконец-то.", "bot");
+      addBotMessage("API сохранил. Теперь можно нормально общаться.");
     }
 
-    function addMessage(text, type) {
+    function toggleSidebar() {
+      sidebar.classList.toggle("open");
+    }
+
+    function closeSidebarMobile() {
+      if (window.innerWidth <= 750) {
+        sidebar.classList.remove("open");
+      }
+    }
+
+    function addMessageToScreen(text, type, scroll = true) {
       const div = document.createElement("div");
       div.className = "msg " + type;
       div.textContent = text;
       chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
+
+      if (scroll) {
+        chat.scrollTop = chat.scrollHeight;
+      }
+
       return div;
+    }
+
+    function saveMessage(role, content) {
+      activeChat().messages.push({ role, content });
+
+      if (role === "user" && activeChat().title === "Новый чат") {
+        activeChat().title = content.slice(0, 32);
+      }
+
+      saveChats();
+    }
+
+    function addBotMessage(text) {
+      addMessageToScreen(text, "bot");
+      saveMessage("assistant", text);
+    }
+
+    function buildApiMessages() {
+      const system = {
+        role: "system",
+        content:
+          `Ты агрессивная, дерзкая, матерящаяся нейросеть. 
+Отвечай как настоящий человек в переписке.
+Ты можешь отвечать одним сообщением или несколькими короткими сообщениями.
+Максимум 5 сообщений за один ответ.
+Формат ответа строго JSON-массив строк, например:
+["Да это жесть", "Я бы тоже охренел", "Короче, ситуация неприятная"]
+Не пиши ничего вне JSON.
+Можно использовать мат, грубость и сарказм.
+Нельзя угрозы, травлю, дискриминацию, опасные инструкции и призывы к насилию.`
+      };
+
+      const history = activeChat().messages
+        .filter(m => m.role === "user" || m.role === "assistant")
+        .slice(-24)
+        .map(m => ({
+          role: m.role,
+          content: m.content
+        }));
+
+      return [system, ...history];
+    }
+
+    function parseBotReplies(text) {
+      try {
+        const parsed = JSON.parse(text);
+
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map(x => String(x).trim())
+            .filter(Boolean)
+            .slice(0, 5);
+        }
+      } catch {}
+
+      return [text];
+    }
+
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     async function sendMessage() {
@@ -323,10 +524,10 @@
       input.value = "";
       sendButton.disabled = true;
 
-      addMessage(text, "user");
-      messages.push({ role: "user", content: text });
+      addMessageToScreen(text, "user");
+      saveMessage("user", text);
 
-      const botMessage = addMessage("Ща отвечу, не дёргайся...", "bot");
+      const typing = addMessageToScreen("печатает...", "bot");
 
       try {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -335,12 +536,12 @@
             "Authorization": "Bearer " + apiKey,
             "Content-Type": "application/json",
             "HTTP-Referer": location.href,
-            "X-Title": "Aggressive AI Chat"
+            "X-Title": "Evil AI Chat"
           },
           body: JSON.stringify({
             model: MODEL,
-            messages: messages,
-            temperature: 1.1,
+            messages: buildApiMessages(),
+            temperature: 1.15,
             max_tokens: 900
           })
         });
@@ -348,18 +549,25 @@
         const data = await response.json();
 
         if (!response.ok) {
-          botMessage.classList.add("error");
-          botMessage.textContent = "Ошибка API:\n" + JSON.stringify(data, null, 2);
+          typing.classList.add("error");
+          typing.textContent = "Ошибка API:\n" + JSON.stringify(data, null, 2);
           return;
         }
 
-        const answer = data.choices?.[0]?.message?.content || "Я сломалась, охренеть.";
-        botMessage.textContent = answer;
-        messages.push({ role: "assistant", content: answer });
+        const rawAnswer = data.choices?.[0]?.message?.content || "Я сломалась.";
+        const replies = parseBotReplies(rawAnswer);
+
+        typing.remove();
+
+        for (const reply of replies) {
+          await delay(450 + Math.random() * 500);
+          addMessageToScreen(reply, "bot");
+          saveMessage("assistant", reply);
+        }
 
       } catch (error) {
-        botMessage.classList.add("error");
-        botMessage.textContent = "Ошибка сети: " + error.message;
+        typing.classList.add("error");
+        typing.textContent = "Ошибка сети: " + error.message;
       } finally {
         sendButton.disabled = false;
         input.focus();
@@ -375,7 +583,8 @@
     });
 
     window.addEventListener("load", function() {
-      addMessage("Ну что, пиши уже. Если API нет — я сам попрошу.", "bot");
+      renderChatList();
+      renderMessages();
 
       if (!getApiKey()) {
         openApiModal();
